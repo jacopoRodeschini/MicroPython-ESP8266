@@ -1,0 +1,212 @@
+#+TITLE: ESP8266 - MICROPYTHON
+#+AUTHOR: Jacopo Rodeschini 1046083\\ Department of Computer Science \\ Università degli studi Bergamo \\ Dalmine, 24044
+#+DATE: <2019-12-09>
+
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [a4paper,8pt]
+#+OPTIONS: toc:nil autohr:nil
+#+latex_header: \usepackage{float}
+#+latex_header: \usepackage{graphicx}
+#+latex_header: \usepackage{authblk} 
+#+LATEX_HEADER: \usepackage{paralist}
+#+LaTeX_HEADER: \let\itemize\compactitem
+#+LaTeX_HEADER: \let\description\compactdesc
+#+LaTeX_HEADER: \let\enumerate\compactenum
+#+LATEX_HEADER: \affil[1]{Univerità degli studi di Bergamo UniBg}
+
+#+LATEX_HEADER: \hypersetup{colorlinks=true}
+#+LATEX_HEADER: \hypersetup{colorlinks=true,linkcolor=blue}
+#+LATEX_HEADER: \usepackage{minted}
+*Why esp8266?*
+
+Simple - cheaper - Wifi - Fast - 1Mb flash size. 
+
+*Why micropython?*
+
+MicroPython is a software implementation of a programming language largely compatible with Python 3, written in C, that is optimized to run on a microcontroller.
+
+MicroPython is a full Python compiler and runtime that runs on the micro-controller hardware. In addition to implementing a selection of core Python libraries, MicroPython includes modules such as "machine" for accessing low-level hardware
+
+Forst part of guide are centered to load micropython on NodeMcu v3 board, next show hoe to build custom PCB with ESP8266. 
+ 
+* Dictionary 
+*Firmware:*
+
+E' un programma, ovvero una sequenza di istruzioni, integrato direttamente in un componente elettronico programmato (es. BIOS su ROM). I dispositivi più recenti consentono l'aggiornamento del firmware, in una scheda elettronica esso generalmente trova posto all'interno di una memoria ROM o flash.Il suo scopo è quello di avviare il componente stesso e consentirgli di interagire con altri componenti hardware tramite l'implementazione di protocolli di comunicazione o interfacce di programmazione. Rappresenta di fatto il punto di incontro fra le componenti logiche e fisiche di un dispositivo elettronico, ossia tra software e hardware.
+
+*Bootloader:*
+
+Spesso esiste un altro componente software più semplice e di livello più basso, che si occupa delle funzioni minimali necessarie a gestire la memoria non volatile e a caricare il firmware, denominato bootloader.
+
+*Driver:*
+
+Esso permette al sistema operativo di utilizzare l'hardware senza sapere come esso funzioni, ma dialogandoci attraverso un'interfaccia standard. Ne consegue che un driver è specifico sia dal punto di vista dell'hardware che pilota, sia dal punto di vista del sistema operativo per cui è scritto. Non è possibile utilizzare driver scritti per un sistema operativo su uno differente, perché l'interfaccia è generalmente diversa.
+
+* System: 
+This guide are joined with Ubuntu 18.04
+
+#+ATTR_LATEX: :options frame=single
+#+BEGIN_SRC sh :results output :exports both
+echo "hi, I'm:"
+uname -s
+echo "my brain is:"
+uname -v
+#+END_SRC
+#+RESULTS:
+: hi, I'm:
+: Linux
+: my brain is:
+: #34~18.04.1-Ubuntu SMP Fri Feb 28 13:42:26 UTC 2020
+
+First step for configuration system is set user permission. Default user can't use tty* (serial interface, COM) of machine. For this topic see below:
+
+use this command to find your permission
+
+#+BEGIN_EXAMPLE
+groups
+#+END_EXAMPLE  
+
+if not see tty type of permission 
+
+#+BEGIN_EXAMPLE
+sudo usermod -a -G tty yourname
+#+END_EXAMPLE
+
+
+Now plug and unplug your CH340 device from the USB port and use /dsmeg/ command to see what appened.
+
+if you see also like this:
+#+CAPTION: dmesg output
+#+NAME: fig:dmesg
+[[./image/dmesgOutput.png]]
+
+the image show that esp8266 use ch340g driver (usb-uart converter) [fn:1]. New version or different version of NodeMcu usp cp12... converter. the procedure don't change, for driver installations see next sections. 
+
+* Connections:
+ Connctiong with machines were ESP are attached and controll if you have installad *driver for esp8266 (ch340)* (install driver are the most critical operation, for more info follow [[https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all#linux][link]])
+#+BEGIN_EXAMPLE 
+ssh pi@<ip> ;; (view ./ssh/config)
+
+:: for rasbian use this to downlaod driver
+sudo apt update
+sudo apt upgrate
+#+END_EXAMPLE
+
+:: attached esp8266 with (ch340)
+now attach nodeMcu end type _dmesg_ if you see [[fig:dmesg]] output you have success install the driver
+
+#+BEGIN_EXAMPLE 
+dmesg         :: view where esp are attached
+ls /dev/tty*  :: look for /dev/ttyUSB0
+#+END_EXAMPLE
+
+Now NodeMcu are correctly connect with our machine (Ubuntu desktop). 
+
+* Esptool
+For next step, it's necessary install esptool.py (esp tool), this software python script that comunicate with NodeMcu rom and erase/update firmware. To install it, open terminal and use python packets maneger. (use latest python version 3.7) 
+  
+#+BEGIN_EXAMPLE
+pip install esptoo.py
+#+END_EXAMPLE
+
+for example, for see the chip specifications use:
+
+#+BEGIN_SRC sh :results output :exports both
+esptool.py chip_id
+#+END_SRC
+#+RESULTS: 
+
+another useful optios are --flash_id
+#+BEGIN_SRC sh :results output :exports both
+esptool.py flash_id
+#+END_SRC
+#+RESULTS: 
+
+with flash_id controll the memory of esp chip, with this information intall the true firmaware, add --help options too see full command. 
+ 
+* Upload Firmware
+in this step we cancell last firmaware, to upload micropython interpreter, download form this [[http://micropython.org/download#esp8266][Link]] latest firmware, for thi issues check the flash memory size, in my case real flash size are 1Mb (Att: the flash_id return 4Mb, for nodeMcu this are divide by 4), then upload [fn:2]. 
+#+BEGIN_EXAMPLE
+esptool.py --port /dev/ttyUSB0 erase_flash  // cancell previos firmware
+
+esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash 
+ --flash_size=detect 0 esp8266-20180511-v1.9.4.bin --flash_mode=dout 
+
+#+END_EXAMPLE
+
+ for more info of this step and fix bug follow [[https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html][firmware upload]] (official documentation of micropython firmware upload).
+* RELP Terminal 
+ RELP (inline interpreter micropython) is a more powerfull features of micropython (for me). You can open inline sesson with board (NodeMcu) and type upython code that will evalutate on board.The REPL has history, tab completion, auto-indent and paste mode for a great user experience.
+For open a new session type:
+   
+#+BEGIN_EXAMPLE
+picocom /dev/ttyUSB0 -b115200
+
+Terminal ready
+
+>>>  // python interpreter
+>>> 3 + 1 
+4
+>>> print('Hello Word!!!')
+Hello Word!!!
+
+[C-a C-x] close session
+#+END_SRC
+
+now, put inside a python code e walla :). 
+in the following examples we turn on and off a simple pin named led
+#+BEGIN_EXAMPLE
+>>> from machine import Pin
+>>> led = Pin(12,Pin.OUT)
+>>> led.on()
+>>> led.off()
+>>> led.on()
+#+END_EXAMPLE
+
+Now with program ours nodemcu in micrpython.
+For micropython documentation [[http://docs.micropython.org/en/latest/][doc]] follow "Reference for ESP8266"
+
+* Run Script
+An import task, is run a upython script (.py) that start run when board are powered. For this install ampy
+
+#+BEGIN_EXAMPLE
+sudo apt install ampy upgrade
+#+END_EXAMPLE
+
+then use this to run main.py script. The output was printed in command line.  
+
+#+BEGIN_EXAMPLE
+ampy --port /dev/ttyUSB0 run main.py
+#+END_EXAMPLE
+
+when you use a infinite loop add --no-output options and open a repl terminal to see execution of program (picocom)
+
+#+BEGIN_EXAMPLE
+ampy --port /dev/ttyUSB0 run --no-output main.py
+#+END_EXAMPLE
+
+if you put our main file in memory, this run every times when board is powerd, use: 
+
+#+BEGIN_EXAMPLE
+ampy --port /dev/ttyUSB0 put myfile.py /main.py
+#+END_EXAMPLE
+
+for more details on ampy tool or more oprions follow [[https://www.digikey.com/en/maker/projects/micropython-basics-load-files-run-code/fb1fcedaf11e4547943abfdd8ad825ce][ampy doc]]
+* Footnotes
+
+[fn:1] Note that for reason first you need to install ch340g driver on your laptop or device. In ubuntu this are just in normal installations. for other OS please check the driver. In second instance check the usb cable, this is the most couse of failure of procedure.
+
+[fn:2] Note that line to upload new firmware there are --flash_mode=dout options, missing it couse failure of upload.  
+
+
+
+* Custom board
+** TODO ESP-12 observations
+** TODO Power ESP-12
+** TODO Power boar
+** TODO UART connections 
+** TODO Auto reset circuit 
+** TODO Simple [°C] Sensor
+** TODO Simple Bjt Output 
+
+
