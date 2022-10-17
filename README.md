@@ -59,11 +59,11 @@ sudo usermod -a -G tty $USER
 ```
 Now plug and unplug your CH340 device from the USB port and use **dsmeg** command to see what appened.
 
-Tou see that esp8266 use ch340g driver (usb-uart converter) [new version or different version of NodeMcu usp cp12… converter. the procedure don’t change, for driver installations see next sections].
+Tou see that esp8266 use ch340g driver (usb-uart converter) [new version or different version of NodeMcu usp cp12… converter. The procedure don’t change, for driver installations see next sections].
 
 # Connections
 
-Connctiong with machines were ESP are attached and controll if you have installad driver for esp8266 (ch340) (install driver are the most critical operation, for more info follow [link][https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all#linux])
+Connctiong with machines were ESP are attached and controll if you have installad driver for esp8266 (ch340) (install driver are the most critical operation, for more info follow [link](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all#linux)
 
 ```
 ssh pi@<ip> ;; (view ./ssh/config)
