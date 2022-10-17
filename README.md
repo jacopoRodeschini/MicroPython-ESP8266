@@ -84,6 +84,23 @@ ls /dev/tty*  :: look for /dev/ttyUSB0
 
 Now NodeMcu are correctly connect with our machine (Ubuntu desktop).
 
+Usually to experiment with drivers, and install third party software is goot to work on virtual machines (VMs). In this case, if you are working on a VM (hos on your pc), you must enable the access of the VM to the serial ports. 
+
+Go to VM setting and add new port [link](https://www.linux-kvm.org/page/USB_Host_Device_Assigned_to_Guest). At the end you need to add qemu-KVM to the **dialout** group, see this [link](https://askubuntu.com/questions/112568/how-do-i-allow-a-non-default-user-to-use-serial-device-ttyusb0). 
+
+```
+gropus
+users
+sudo adduser second_user dialout
+```
+
+Now try again 
+```
+dmesg         :: view where esp are attached
+ls /dev/tty*  :: look for /dev/ttyUSB0
+```
+
+
 
 # ESP TOOl (Esptool.py)
 
@@ -106,16 +123,6 @@ esptool.py flash_id
 with flash_id controll the memory of esp chip, with this information intall the true firmaware, to see the full command options add –help in the command (for example specify the port, bit rate and other).
 
 
-usually to experiment with drivers, and install third party software and work on virtual machines. In this case, if you are working on a virtual machine (VM) on your pc, you must enable the access of the VM to the serial ports. 
-
-Go to VM setting and add new port [link][https://www.linux-kvm.org/page/USB_Host_Device_Assigned_to_Guest]. At the end you need to add qemu-KVM to the **dialout** group [link][https://askubuntu.com/questions/112568/how-do-i-allow-a-non-default-user-to-use-serial-device-ttyusb0]. 
-
-```
-gropus
-users
-sudo adduser second_user dialout
-```
-
 # Upload Firmware
 
 in this step we cancell last firmaware and upload the micropython interpreter. Download form this [download][http://micropython.org/download#esp8266] the latest firmware (check your flash memory size), in my case real flash size are 1Mb (Att: the flash_id return 4Mb, for nodeMcu this are divide by 4), then upload [fn:2].
@@ -129,7 +136,7 @@ esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash
  --flash_size=detect 0 esp8266-20180511-v1.9.4.bin --flash_mode=dout 
 
 ```
-for more info of this step and fix bug follow firmware upload (official [documentation][https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html] of micropython firmware upload).
+for more info of this step and fix bug follow firmware upload (official [documentation](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html] of micropython firmware upload).
 
 Note that line to upload new firmware there are **–flash_mode=dout** options, missing it cause failure of upload.
 
@@ -161,7 +168,7 @@ in the following examples we turn on and off a simple pin named led
 >>> led.off()
 >>> led.on()
 ```
-Now with program ours nodemcu in micrpython. For micropython [documentation][http://docs.micropython.org/en/latest/] follow “Reference for ESP8266”.
+Now with program ours nodemcu in micrpython. For micropython [documentation](http://docs.micropython.org/en/latest/) follow “Reference for ESP8266”.
 
 # Run Script
 
@@ -185,7 +192,7 @@ if you put our main file in memory, this run every times when board is powerd, u
 ```
 ampy --port /dev/ttyUSB0 put myfile.py /main.py
 ```
-for more details on ampy tool or more oprions follow ampy [documentation][https://www.digikey.com/en/maker/projects/micropython-basics-load-files-run-code/fb1fcedaf11e4547943abfdd8ad825ce]
+for more details on ampy tool or more oprions follow ampy [documentation](https://www.digikey.com/en/maker/projects/micropython-basics-load-files-run-code/fb1fcedaf11e4547943abfdd8ad825ce)
 
 
 
