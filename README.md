@@ -224,6 +224,39 @@ for more details on ampy tool or more oprions follow ampy [documentation](https:
 
 Now, it's useful to setting up vs IDE to develop more faster. To install and download the micropyton extension see the [documentation](https://marketplace.visualstudio.com/items?itemName=dphans.micropython-ide-vscode). It's very, very easy!
 
+--
+## Download libraries
+
+Micropython provide very simple but very usefull package manager. The new libraries are saved under '/lib' folder
+
+
+```
+>>> import upip
+
+>>> upip.install('package_name');
+...
+>>> os.listdir()
+['boot.py', 'lib.py', 'data.txt']
+ 
+```
+
+In this way it's possible create a package, save it on a PyPI repositories and download new version of packages every times.
+
+
+Take in mind the two important file: boot.py & main.py.
+- **boot.py** : this script is executed when the pyboard boots up.
+
+- **main.py** : this is the main script that will contain your Python program. It is executed after boot.py.
+
+
+So, it'possible use boot to check and download new version of libreries at every boot (or every hard/soft-reboot). And it's possible to throw reboot
+
+```
+>>> import machine
+>>> machine.reset() // hard reboot 
+```
+
+
 This is enought 
 Good programming time ;)
 
