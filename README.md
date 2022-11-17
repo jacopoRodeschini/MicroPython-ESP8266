@@ -1,125 +1,113 @@
-# ESP8266 - MICROPYTHON
+# ESP8266 & MICROPYTHON
+> Simple - cheaper - Wifi - Fast - 1Mb flash size.
 
-**Why esp8266?**
+[MicroPython](https://docs.micropython.org/en/latest/index.html) is a software implementation of a programming language largely compatible with Python 3, written in C, that is optimized to run on a microcontroller. MicroPython is a full Python compiler and runtime that runs on the micro-controller hardware. In addition to implementing a selection of core Python libraries, MicroPython includes modules such as “machine” for accessing low-level hardware
 
-Simple - cheaper - Wifi - Fast - 1Mb flash size.
+First part of this guide are centered to flash micropython on ESP8266 based board, the next one show how to run python on the device. 
 
-**Why micropython?**
+### :notebook: Dictionary
 
-MicroPython is a software implementation of a programming language largely compatible with Python 3, written in C, that is optimized to run on a microcontroller.
+* In computing, [**firmware**](https://en.wikipedia.org/wiki/Firmware) is a specific class of computer software that provides the low-level control for a device's specific hardware. Firmware is held in non-volatile memory devices such as ROM, EPROM, EEPROM, and Flash memory. 
 
-MicroPython is a full Python compiler and runtime that runs on the micro-controller hardware. In addition to implementing a selection of core Python libraries, MicroPython includes modules such as “machine” for accessing low-level hardware
+* A **bootloader** is a computer program that is responsible for booting a computer.
 
-Forst part of guide are centered to load micropython on NodeMcu v3 board, next show hoe to build custom PCB with ESP8266.
-
-## Dictionary
-
-**Firmware**:
-
-E’ un programma, ovvero una sequenza di istruzioni, integrato direttamente in un componente elettronico programmato (es. BIOS su ROM). I dispositivi più recenti consentono l’aggiornamento del firmware, in una scheda elettronica esso generalmente trova posto all’interno di una memoria ROM o flash.Il suo scopo è quello di avviare il componente stesso e consentirgli di interagire con altri componenti hardware tramite l’implementazione di protocolli di comunicazione o interfacce di programmazione. Rappresenta di fatto il punto di incontro fra le componenti logiche e fisiche di un dispositivo elettronico, ossia tra software e hardware.
-
-**Bootloader**:
-
-Spesso esiste un altro componente software più semplice e di livello più basso, che si occupa delle funzioni minimali necessarie a gestire la memoria non volatile e a caricare il firmware, denominato bootloader.
-
-**Driver**:
-
-Esso permette al sistema operativo di utilizzare l’hardware senza sapere come esso funzioni, ma dialogandoci attraverso un’interfaccia standard. Ne consegue che un driver è specifico sia dal punto di vista dell’hardware che pilota, sia dal punto di vista del sistema operativo per cui è scritto. Non è possibile utilizzare driver scritti per un sistema operativo su uno differente, perché l’interfaccia è generalmente diversa.
+* A **driver** provides a software interface to hardware devices, enabling operating systems and other computer programs to access hardware functions without needing to know precise details about the hardware being used.
 
 
-## Setting up
+### :rocket: Setting up
 
 This guide are joined with Ubuntu 18.04
 
 ```
-echo "hi, I'm:"
-uname -s
-echo "my brain is:"
-uname -v
+>> echo "hi, I'm:"
+>> echo "my brain is:"
+>> uname -v
+
 hi, I'm:
-Linux
 my brain is:
-#34~18.04.1-Ubuntu SMP Fri Feb 28 13:42:26 UTC 2020
+#34~18.04.1-Ubuntu
 ```
 
-First step for configuration system is set user permission. Default user can’t use tty* (serial interface, COM) of machine. For this topic see below:
+The first step for the initial configuration is to set user permission. The default user can’t use tty* (serial interface, COM) of the machine.
 
-use this command to find your permission
 
-```
-groups
-```
-
-if not see tty type of permission
 
 ```
-sudo usermod -a -G tty yourname
-or
-sudo usermod -a -G tty $USER
+# Use this command to find your permission
+>> groups
 ```
-Now plug and unplug your CH340 device from the USB port and use **dsmeg** command to see what appened.
-
-Tou see that esp8266 use ch340g driver (usb-uart converter) [new version or different version of NodeMcu usp cp12… converter. The procedure don’t change, for driver installations see next sections].
-
-## Connections
-
-Connctiong with machines were ESP are attached and controll if you have installad driver for esp8266 (ch340) (install driver are the most critical operation, for more info follow [link](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all#linux)
+if tty is not present
 
 ```
-ssh pi@<ip> ;; (view ./ssh/config)
+>> sudo usermod -a -G tty $USER
 ```
 
-for rasbian, ch340 driver is already installed. Use this to upgrade driver
+Now plug and unplug your device from the USB port and use **dsmeg** command to see what happened.
+
+You see that ESP8266 use a CH340g driver. Different ESP8266-based boards can use a different converter. The following procedure doesn’t change with to respect the converter. The only minor changes concern the right driver installations for the specific converter. In the next section, we perform this task.
+
+### Connections
+
+You need to connect with machines where ESP are attached and control if you have installed the driver for esp8266 (ch340) (installing the driver is the most critical operation, for more info follow this [documentation](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all#linux))
 
 ```
-sudo apt update
-sudo apt upgrate
-```
-Attach esp8266 with (ch340) and type **dmesg** and look you have success install the driver
-
-```
-dmesg         :: view where esp are attached
-lsusb	   :: view usb device 
-ls /dev/tty*  :: look for /dev/ttyUSB0
+>> ssh pi@<ip> ;; (view the configuration ./ssh/config)
 ```
 
-Now NodeMcu are correctly connect with our machine (Ubuntu desktop).
-
-Usually to experiment with drivers, and install third party software is goot to work on virtual machines (VMs). In this case, if you are working on a VM (hos on your pc), you must enable the access of the VM to the serial ports (lsusb dosent show the device). 
-
-Go to VM setting and add new port [link](https://www.linux-kvm.org/page/USB_Host_Device_Assigned_to_Guest). At the end you need to add qemu-KVM to the **dialout** group, see this [link](https://askubuntu.com/questions/112568/how-do-i-allow-a-non-default-user-to-use-serial-device-ttyusb0). 
+for the Raspbian OS, the CH340g driver is already installed. Use this line of code to upgrade the driver
 
 ```
-# 1) Uninstal this driver
+>> sudo apt update
+>> sudo apt upgrate
+```
 
- sudo apt remove brltty 
+Now attach ESP8266 with the CH340 driver and type again **dmesg** command to see if the driver is installed correctly
+
+```
+>> dmesg         :: view where ESP8266 is attached
+>> lsusb	   :: view usb devices 
+>> ls /dev/tty*  :: look for /dev/ttyUSB0
+```
+
+Now the ESP8266 is correctly connected to your machine.
+
+Usually, the best practice is to experiment with drivers and install third-party software on virtual machines (VMs). In this case, if you are working on a VM (hos on your pc), you must enable the access of the VM to the serial ports (the **lsusb** command doesn't show the device). 
+
+Go to VM setting and add new serial port [documentation](https://www.linux-kvm.org/page/USB_Host_Device_Assigned_to_Guest). At the end, you need to add qemu-KVM to the **dialout** group. Follow this [documentation](https://askubuntu.com/questions/112568/how-do-i-allow-a-non-default-user-to-use-serial-device-ttyusb0). 
+
+```
+# 1) Uninstal brltty driver
+
+>> sudo apt remove brltty 
 
 # 2) Add new hardware (virt-viewr)
 
 # 3) Check the connection 
-dmesg         :: view where esp are attached
-ls /dev/tty*  :: look for /dev/ttyUSB0
+>> dmesg         :: view where esp are attached
+>> ls /dev/tty*  :: look for /dev/ttyUSB0
 ```
 
--device usb-host,vendorid=0x05ac,productid=0x12ab,**guest-reset=false** \
+### :rocket: ESPTOOl (Esptool.py)
 
-
-
-## ESP TOOl (Esptool.py)
-
-For next step, it’s necessary install esptool.py (esp tool), this python script comunicate with NodeMcu rom and erase/update firmware. To install it, open terminal and use python packets maneger **pip** (here latest python version 3.7).
+For the next step, it’s necessary to install esptool.py (esp tool). This python script communicates with ESP8266 ROM and performs some tasks such as erasing and updating the firmware. To install esptool, open the terminal and use the python packets manager **pip**.
 
 ```
-python -V & pip -V
-pip install esptoo
-esptool.py -help
+# Python and pip version 
+>> python -V & pip -V
+
+# Install esptool script
+>> pip install esptool.py
+
+# Esptool options help
+>> esptool.py -help
 ```
-for example, for see the chip specifications use:
+For example, to see the chip specifications use the following line of code:
 
 ```
-esptool.py chip_id (--port /dev/ttyUSB0)
+# Chip specifications
+>> esptool.py chip_id --port /dev/ttyUSB0
 
-# Output
+# Command output
 Detecting chip type... ESP8266
 Chip is ESP8266EX
 Features: WiFi
@@ -131,12 +119,12 @@ Stub running...
 Chip ID: 0x003d52dd
 
 ```
-another useful optios are –flash_id with which it's possible to check the memory of ESP device. This information is't mandatory to intall the "true" firmaware, which depent on the flash size. To see the full command options add –help in the command (for example specify the port, bit rate and other).
-
+Another useful command is the **–flash_id** with which it's possible to check the memory of the ESP8266 device. The flash memory size information is mandatory to install the right firmware.
 ```
-esptool.py flash_id
+# ESP8266 flash information
+>> esptool.py flash_id
 
-# Output 
+# Command output 
 ...
 Manufacturer: c8
 Device: 4016
@@ -145,119 +133,132 @@ Detected flash size: 4MB
 
 ```
 
-## Upload Firmware
+### :mega: Upload Firmware
 
-In this step we erase the last firmaware boot on ESP and upload the new micropython one (on other words we upload the interpreter). The main download page are available from this list [download](http://micropython.org/download). Download the latest firmware based on your flash memory size. In my case real flash size are 1Mb (Note: the flash_id return 4Mb, for nodeMcu this are divide by 4). 
-
-```
-cd Download
-wget https://micropython.org/download/esp8266-1m/  :: file name = esp8266-1m-20220618
-```
+In this step, we erase the last firmware boot on ESP and upload the new firmware for the micropython interpreter (in other words we upload the interpreter). The main download page is available from this list [download](http://micropython.org/download). Download the latest firmware based on your flash memory size. In my case flash memory size is 1Mb.
 
 ```
-esptool.py --port /dev/ttyUSB0 erase_flash  // cancell previos firmware
+# Download the firmware (replace filename with your version)
+>> cd Download
+>> wget https://micropython.org/download/esp8266-1m/[filename]
+```
 
-esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash 
+```
+# Erase the flash 
+>> esptool.py --port /dev/ttyUSB0 erase_flash  
+
+# Upload the new firmware
+>> esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash 
  --flash_size=detect 0 esp8266-20180511-v1.9.4.bin --flash_mode=dout 
+```
+For more info on uploading the firmware step and fixing the bugs follow the official [documentation](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html) of micropython firmware upload.
+
+Note that on the line to load the new firmware there are options ** - flash_mode = dout **, in my case without this option they cause a failure of the upload.
+
+
+### :sunglasses: RELP Terminal
+
+The RELP ia a inline interpreter of micropython, [documentation](https://docs.micropython.org/en/latest/esp8266/tutorial/repl.html)). You can open a session with the ESP8266 board and type python code that will evaluate on the board. The REPL has history, tab completion, auto-indent and paste mode for a great user experience. To open a new session you can use the **picocom** command.
 
 ```
-For more info of this step and fix bug follow firmware upload (official [documentation](https://docs.micropython.org/en/latest/esp8266/tutorial/intro.html] of micropython firmware upload).
+# Open serial communication. Use [C-a C-x] to close session 
+>> picocom /dev/ttyUSB0 -b115200
 
-Note that line to upload new firmware there are **–flash_mode=dout** options, missing it cause failure of upload.
-
-
-## RELP Terminal
-
-RELP (inline interpreter micropython) is a more powerfull features of micropython (for me). You can open inline sesson with board (NodeMcu) and type upython code that will evalutate on board.The REPL has history, tab completion, auto-indent and paste mode for a great user experience. For open a new session type:
-
-```
-picocom /dev/ttyUSB0 -b115200
-```
-
-Terminal ready
-
-```
+# When the terminal is ready
+...
 >>>  // python interpreter
 >>> 3 + 1 
 4
 >>> print('Hello Word!!!')
 Hello Word!!!
+...
 
-[C-a C-x] close session
 
-now, put inside a python code e walla :). 
-in the following examples we turn on and off a simple pin named led
+# Now, write python code in the RELP interpreter and enjoy your ESP8266 ;). 
+# In the following examples we turn on and off a simple pin named led
+...
 >>> from machine import Pin
 >>> led = Pin(12,Pin.OUT)
 >>> led.on()
 >>> led.off()
 >>> led.on()
 ```
-Now with program ours nodemcu in micrpython. For micropython [documentation](http://docs.micropython.org/en/latest/) follow “Reference for ESP8266”.
 
-## Run Script
+The REPL interpreter is always available on the UART0 serial peripheral, which is connected to the pins GPIO1 for TX and GPIO3 for RX. The baudrate of the REPL is 115200
 
-An import task, is run a upython script (.py) that start run when board are powered. For this install ampy
+### :v: Run Script
 
-```
-sudo apt install ampy upgrade
-```
-then use this to run main.py script. The output was printed in command line.
+An import task is to run a python script (.py) that starts running when the board are powered. For this task is necessary to install the **ampy** tool.
 
 ```
-ampy --port /dev/ttyUSB0 run main.py
+# Install the ampy tool
+>> sudo apt install ampy upgrade
 ```
-when you use a infinite loop add –no-output options and open a repl terminal to see execution of program (picocom)
+
+Then use the following line of code to run the main.py script on the ESP8266 device. The output was printed in the command line.
 
 ```
-ampy --port /dev/ttyUSB0 run --no-output main.py
+# Run main.py script in the ESP8266 device
+>> ampy --port /dev/ttyUSB0 run main.py
 ```
-if you put our main file in memory, this run every times when board is powerd, use:
+
+When you use an infinite loop add **–no-output** options in the command and open a RELP terminal (with picocom) to see the execution of the program.
 
 ```
-ampy --port /dev/ttyUSB0 put myfile.py /main.py
+>> ampy --port /dev/ttyUSB0 run --no-output main.py
 ```
-for more details on ampy tool or more oprions follow ampy [documentation](https://www.digikey.com/en/maker/projects/micropython-basics-load-files-run-code/fb1fcedaf11e4547943abfdd8ad825ce)
+To run the main.py script in the ESP8266 every time when the board is powered, it's necessary to load the main.py script in the ESP memory. To this step use the *put* command of ampy tool.
+
+```
+# Load the main.py script in the ESP8266 memory
+>> ampy --port /dev/ttyUSB0 put myfile.py /main.py
+```
+For more details on the ampy tool or more options detail follow the official ampy[documentation](https://www.digikey.com/en/maker/projects/micropython-basics-load-files-run-code/fb1fcedaf11e4547943abfdd8ad825ce).
 
 
-## Visual Studio Code (vs)
+### Visual Studio Code (vs)
 
-Now, it's useful to setting up vs IDE to develop more faster. To install and download the micropyton extension see the [documentation](https://marketplace.visualstudio.com/items?itemName=dphans.micropython-ide-vscode). It's very, very easy!
+Now, it's useful setting up VS Code to develop faster. To install and download the micropython extension see the [documentation](https://marketplace.visualstudio.com/items?itemName=dphans.micropython-ide-vscode). It's very, very easy!
 
 --
-## Download libraries
+### Download libraries
 
-Micropython provide very simple but very usefull package manager. The new libraries are saved under '/lib' folder
+Micropython provides a very simple but very useful package manager. The new libraries are saved under '/lib' folder. 
 
 
 ```
+# Open RELP session 
+>> picocom /dev/ttyUSB0 -b115200
+...
+
+
+# Import package manager
 >>> import upip
 
+# Install micropython library 
 >>> upip.install('package_name');
 ...
+
+# See the filesystem
 >>> os.listdir()
 ['boot.py', 'lib.py', 'data.txt']
- 
+...
 ```
 
-In this way it's possible create a package, save it on a PyPI repositories and download new version of packages every times.
+There are two important files: boot.py & main.py.
+- **boot.py** script is executed when the pyboard boots up.
 
+- **main.py** is the main script that will contain your Python program. It is executed after boot.py.
 
-Take in mind the two important file: boot.py & main.py.
-- **boot.py** : this script is executed when the pyboard boots up.
-
-- **main.py** : this is the main script that will contain your Python program. It is executed after boot.py.
-
-
-So, it'possible use boot to check and download new version of libreries at every boot (or every hard/soft-reboot). And it's possible to throw reboot
 
 ```
+# Reboot the device
 >>> import machine
 >>> machine.reset() // hard reboot 
 ```
 
 
-This is enought 
+This is enough 
 Good programming time ;)
 
 
