@@ -16,7 +16,7 @@ First part of this guide are centered to flash micropython on ESP8266 based boar
 
 ### :rocket: Setting up
 
-This guide are joined with Ubuntu 18.04
+This guide was built with Ubuntu 18.04
 
 ```
 >> echo "hi, I'm:"
