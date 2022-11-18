@@ -220,7 +220,7 @@ For more details on the ampy tool or more options detail follow the official amp
 
 Now, it's useful setting up VS Code to develop faster. To install and download the micropython extension see the [documentation](https://marketplace.visualstudio.com/items?itemName=dphans.micropython-ide-vscode). It's very, very easy!
 
---
+
 ### Download libraries
 
 Micropython provides a very simple but very useful package manager. The new libraries are saved under '/lib' folder. 
@@ -259,6 +259,7 @@ There are two important files: boot.py & main.py.
 
 
 This is enough 
+
 Good programming time ;)
 
 
